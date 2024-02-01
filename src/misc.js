@@ -71,7 +71,7 @@ function pushFrontPage() {
 
 var myNick = localStorageGet('my-nick') || '';
 var myColor = localStorageGet('my-color') || null;//hex color value for autocolor
-var myChannel = window.location.search.replace(/^\?/, '')
+var myChannel = decodeURIComponent(window.location.search.replace(/^\?/, ''))
 
 var lastSent = [""];
 var lastSentPos = 0;

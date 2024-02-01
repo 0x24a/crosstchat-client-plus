@@ -506,7 +506,7 @@ var tunnels = localStorageGet('tunnels');
 if (tunnels) {
 	tunnels = JSON.parse(tunnels);
 } else {
-	tunnels = ["wss://hack.chat/chat-ws"]
+	tunnels = ["wss://ws.crosst.chat/"]
 	localStorageSet('tunnels', JSON.stringify(tunnels))
 }
 var currentTunnel = localStorageGet("current-tunnel");
@@ -514,8 +514,8 @@ var ws_url
 if (currentTunnel) {
 	ws_url = currentTunnel
 } else {
-	localStorageSet("current-tunnel", "wss://hack.chat/chat-ws")
-	ws_url = "wss://hack.chat/chat-ws"
+	localStorageSet("current-tunnel", "wss://ws.crosst.chat/")
+	ws_url = "wss://ws.crosst.chat/"
 }
 
 // Add tunnels options to tunnels selector
@@ -576,7 +576,7 @@ if (localStorageGet('highlight')) {
 if (localStorageGet('current-tunnel')) {
 	ctunnel = localStorageGet('current-tunnel')
 } else {
-	ctunnel = "wss://hack.chat/chat-ws"
+	ctunnel = "wss://ws.crosst.chat/"
 }
 
 $id('scheme-selector').value = currentScheme;
