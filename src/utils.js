@@ -64,6 +64,10 @@ var md = new Remarkable('full', markdownOptions);
 // image handler
 var allowImages = false;
 var whitelistDisabled = false;
+var camo=false || localStorageGet("test-camo")!=undefined
+var camoAddrs=[
+	"https://camo.hach.chat/"
+];
 var imgHostWhitelist = [
 	'i.imgur.com',
 	'imgur.com',
@@ -90,9 +94,9 @@ var imgHostWhitelist = [
 ]; // Some are copied from https://github.com/ZhangChat-Dev-Group/ZhangChat/
 
 function getDomain(link) {
-	try{
+	try {
 		return new URL(link).hostname
-	}catch(err){
+	} catch (err) {
 		return new URL("http://example.com").hostname
 	}
 }
@@ -115,6 +119,14 @@ md.renderer.rules.image = function (tokens, idx, options) {
 		var suffix = options.xhtmlOut ? ' /' : '';
 		var scrollOnload = isAtBottom() ? ' onload="window.scrollTo(0, document.body.scrollHeight)"' : '';
 		return '<a href="' + src + '" target="_blank" rel="noreferrer"><img' + scrollOnload + imgSrc + alt + title + suffix + ' referrerpolicy="no-referrer"></a>';
+	}else if(allowImages && camo){
+		var proxiedAddr = camoAddrs[Math.floor(Math.random()*camoAddrs.length)]+"?proxyUrl="+tokens[idx].src
+		var imgSrc = ' src="' + Remarkable.utils.escapeHtml(proxiedAddr) + '"';
+		var title = tokens[idx].title ? (' title="' + Remarkable.utils.escapeHtml(Remarkable.utils.replaceEntities(tokens[idx].title)) + '"') : '';
+		var alt = ' alt="' + (tokens[idx].alt ? Remarkable.utils.escapeHtml(Remarkable.utils.replaceEntities(Remarkable.utils.unescapeMd(tokens[idx].alt))) : '') + '"';
+		var suffix = options.xhtmlOut ? ' /' : '';
+		var scrollOnload = isAtBottom() ? ' onload="window.scrollTo(0, document.body.scrollHeight)"' : '';
+		return '<a href="' + proxiedAddr + '" target="_blank" rel="noreferrer"><img' + scrollOnload + imgSrc + alt + title + suffix + ` referrerpolicy="no-referrer" onerror="this.style.display='none';let addr=document.createElement('p');addr.innerText='${Remarkable.utils.escapeHtml(Remarkable.utils.replaceEntities(src))}';this.parentElement.appendChild(addr)"></a>`;
 	}
 
 	return '<a href="' + src + '" target="_blank" rel="noreferrer">' + Remarkable.utils.escapeHtml(Remarkable.utils.replaceEntities(src)) + '</a>';
@@ -171,7 +183,7 @@ var verifyNickname = function (nick) {
 //LaTeX weapon and too-many-quotes weapon defence
 function verifyMessage(args) {
 	// iOS Safari doesn't support zero-width assertion
-	if(!antiLatex) return true;
+	if (!antiLatex) return true;
 	if (/([^\s^_]+[\^_]{){8,}|(^|\n)(>[^>\n]*){5,}/.test(args.text) || /\$.*[[{]\d+(?:mm|pt|bp|dd|pc|sp|cm|cc|in|ex|em|px)[\]}].*\$/.test(args.text) || /\$\$[\s\S]*[[{]\d+(?:mm|pt|bp|dd|pc|sp|cm|cc|in|ex|em|px)[\]}][\s\S]*\$\$/.test(args.text) || /^[ \t]*(?:[+\-*][ \t]){3,}/m.test(args.text)) {
 		return false;
 	} else {
@@ -180,7 +192,39 @@ function verifyMessage(args) {
 }
 
 function checkLong(text) {
-	return text.split('\n').length > 10 || text.length > 1000
+	return msgLineLength(text) > 8
+}
+
+function msgLineLength(text) {
+	let lines = 0;
+	let byteCount = 0;
+	let currentSubstring = '';
+	for (let i = 0; i < text.length; i++) {
+		let byteLength = text.charCodeAt(i) <= 127 ? 1 : 2;
+		if (text[i] === '\n') {
+			if (byteCount + byteLength >= 72) {
+				lines += 1;
+				byteCount = 0;
+				currentSubstring = '';
+			}
+			currentSubstring += text[i];
+			lines += 1;
+			byteCount = 0;
+			currentSubstring = '';
+		} else if (byteCount + byteLength > 72) {
+			lines += 1;
+			byteCount = byteLength;
+			currentSubstring = text[i];
+		} else {
+			byteCount += byteLength;
+			currentSubstring += text[i];
+		}
+	}
+	if (currentSubstring !== '') lines += 1
+	text.split("\n").forEach(e => {
+		if (e.startsWith("#")) lines += 1
+	})
+	return lines;
 }
 
 var input = $id('chatinput');

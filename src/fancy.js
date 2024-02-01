@@ -73,7 +73,12 @@ let run = {
 			pushMessage({ nick: '!', text: `${args.length} arguments are given while 1 is needed.` })
 			return
 		}
+		// Warning
 		let plugin_address=args[0]
+		pushMessage({ nick: '!', text: `Warning: Please only add plugins that you trust.
+		**IF YOUR HC++ IS BROKEN, THEN GO TO [/rescue-mode.html](/rescue-mode.html) AND PRESS =="REMOVE ALL PLUGINS"==**.
+		or [REMOVE THIS PLUGIN](/rescue-mode.html#remove-plugin?${encodeURIComponent(plugin_address)}) now.` })
+		
 		//get the cmds first
 		let plugins=localStorageGet("plugins")
 		if(plugins != undefined){
@@ -85,13 +90,15 @@ let run = {
 		plugins.push(plugin_address)
 		//save
 		localStorageSet("plugins",JSON.stringify(plugins))
-		pushMessage({nick:"*",text:"Added plugin."})
+		pushMessage({nick:"*",text:"Added plugin, refresh to apply."})
+		
 		//load it NOW
-		let e = document.createElement("script")
-        e.setAttribute("src", plugin_address)
-        e.setAttribute("type","application/javascript");
-        document.getElementsByTagName('head')[0].appendChild(e);
-        console.log("Loaded plugin: ", e)
+		// let e = document.createElement("script")
+        // e.setAttribute("src", plugin_address)
+        // e.setAttribute("type","application/javascript");
+        // document.getElementsByTagName('head')[0].appendChild(e);
+        // console.log("Loaded plugin: ", e)
+		 //disabled for security.
 	},
 	listplugins(...args){
 		let plugins=localStorageGet("plugins")
@@ -108,6 +115,37 @@ let run = {
 	},
 	updatelast(...args){
 		send({cmd: 'updateMessage', mode: 'overwrite', text: args[0], customId: lastcid});
+	},
+	ignorehash(...args){
+		let hash = args[0]
+		if (ignoredHashs.indexOf(hash) > -1) {
+			hashDeignore(hash)
+			pushMessage({ nick: '*', text: `Cancelled ignoring hash ${hash}.` })
+		} else {
+			hashIgnore(hash)
+			pushMessage({ nick: '*', text: `Ignored hash ${hash}.` })
+		}
+	},
+	merge_config(...args){
+		if (args.length != 1) {
+			pushMessage({ nick: '!', text: `${args.length} arguments are given while 1 is needed.` })
+			return
+		}
+		pushMessage({ nick: '*', text: `Click [this](https://${args[0]}/merge-config.html#${encodeURIComponent(JSON.stringify(localStorage))}) to merge config.`})
+	},
+	enable_camo(...args){
+		if (args.length > 1) {
+			pushMessage({ nick: '!', text: `${args.length} arguments are given while 1 or 0 is needed.` })
+			return
+		}
+		if(args.length == 0){
+			pushMessage({ nick: '!', text: `## Warning:\n Camo is a experimental feature and currently in test.\n**ONCE YOU ENABLED IT, YOU CAN ONLY DISABLE IT VIA CONSOLE.**\nIf you are sure about enabling it, then input \`/enable_camo iamsure\``})
+		}else if(args[0] == "iamsure"){
+			localStorageSet("test-camo",1)
+			pushMessage({ nick: '*', text: `Camo enabled. refresh to apply.` })
+		}else{
+			pushMessage({ nick: '!', text: 'Unknown arguments.' })
+		}
 	}
 }
 
@@ -134,7 +172,7 @@ function parseSPCmd(input) {
 	var args=input.split(" ").slice(1)
 	return [name,args]
   }
-function isSPCmd(text){ //P.S SPCmd == SpeCial Command
+function isSPCmd(text){ //P.S SPCmd == SPecial Command
 	return (text.startsWith('/') && (run[text.split("/")[1].split(" ")[0]] != undefined))
 }
 function callSPcmd(text){

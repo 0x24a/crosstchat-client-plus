@@ -14,6 +14,14 @@
  */
 var checkActiveCacheInterval = 30 * 1000;
 var activeMessages = [];
+var users_ = []
+
+
+function nickGetHash(nick) {
+	for (let k in users_) {
+		if (users_[k].nick === nick) return users_[k].hash
+	}
+}
 
 setInterval(function () {
 	var editTimeout = 6 * 60 * 1000;
@@ -59,6 +67,7 @@ function join(channel, oldNick) {
 	wasConnected = false;
 
 	ws.onopen = function () {
+		hook.run("before","connect",[])
 		var shouldConnect = true;
 		if (!wasConnected) {
 			if (location.hash) {
@@ -187,7 +196,7 @@ function join(channel, oldNick) {
 
 var COMMANDS = {
 	chat: function (args, raw) {
-		if (ignoredUsers.indexOf(args.nick) >= 0) {
+		if (ignoredUsers.indexOf(args.nick) >= 0 || ignoredHashs.indexOf(nickGetHash(args.nick)) >= 0) {
 			return
 		}
 		var elem = pushMessage(args, { i18n: false, raw })
@@ -253,7 +262,7 @@ var COMMANDS = {
 	},
 
 	info: function (args, raw) {
-		if ((args.type == 'whisper' || args.type == 'invite') && ignoredUsers.indexOf(args.from) >= 0) {
+		if ((args.type == 'whisper' || args.type == 'invite') && (ignoredUsers.indexOf(args.from) >= 0 || ignoredHashs.indexOf(nickGetHash(args.from)) >= 0)) {
 			return
 		}
 		args.nick = '*'
@@ -261,7 +270,7 @@ var COMMANDS = {
 	},
 
 	emote: function (args, raw) {
-		if (ignoredUsers.indexOf(args.text.match(/@(.+?)(?: .+)/)[1]) >= 0) {
+		if (ignoredUsers.indexOf(args.text.match(/@(.+?)(?: .+)/)[1]) >= 0 || ignoredHashs.indexOf(nickGetHash(args.text.match(/@(.+?)(?: .+)/)[1])) >= 0) {
 			return
 		}
 		args.nick = '*'
@@ -278,6 +287,7 @@ var COMMANDS = {
 
 		let users = args.users;
 		let nicks = args.nicks;
+		users_ = args.users
 
 		usersClear();
 
@@ -311,6 +321,7 @@ var COMMANDS = {
 
 	onlineAdd: function (args, raw) {
 		var nick = args.nick;
+		users_.push(args)
 
 		userAdd(nick, args);
 
@@ -327,6 +338,9 @@ var COMMANDS = {
 
 	onlineRemove: function (args, raw) {
 		var nick = args.nick;
+		users_ = users_.filter(function (item) {
+			return item.nick !== args.nick;
+		});
 
 		userRemove(nick);
 
@@ -633,11 +647,11 @@ function pushMessage(args, options = {}) {
 
 function send(data) {
 	if (ws && ws.readyState == ws.OPEN) {
-		data = hook.run("in","send",data)
+		data = hook.run("in","send",[data])
 		if(!data){
 			return
 		}
-		ws.send(JSON.stringify(data));
+		ws.send(JSON.stringify(data[0]));
 	}
 }
 
