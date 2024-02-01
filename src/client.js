@@ -91,7 +91,15 @@ function join(channel, oldNick) {
 
 		if (myNick && shouldConnect) {
 			localStorageSet('my-nick', myNick);
-			send({ cmd: 'join', channel: channel, nick: myNick });
+			var myPassword = null;
+			if(myNick.indexOf("#") != -1){
+				myPassword=myNick.split("#").slice(1).join("#")
+				myNick=myNick.split("#")[0]
+			}
+			if(myPassword){
+				send({ cmd: 'join', channel: channel, nick: myNick, password: myPassword, clientName:"[CrosSt++](https://csc.thz.cool/)" });
+			}else{
+			send({ cmd: 'join', channel: channel, nick: myNick, clientName:"[CrosSt++](https://csc.thz.cool/)" });}
 			wasConnected = true;
 			shouldAutoReconnect = true;
 		} else {
