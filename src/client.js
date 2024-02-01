@@ -284,15 +284,15 @@ var COMMANDS = {
 
 	onlineSet: function (args, raw) {
 		isAnsweringCaptcha = false
-
-		let users = args.users;
+		args.nicks.push(myNick.split('#')[0])
+		let users = args.nicks;
 		let nicks = args.nicks;
-		users_ = args.users
+		users_ = args.nicks
 
 		usersClear();
 
 		users.forEach(function (user) {
-			userAdd(user.nick, user);
+			userAdd(user.nick, null);
 		});
 
 		let nicksHTML = nicks.map(function (nick) {
@@ -307,7 +307,7 @@ var COMMANDS = {
 		// respectively render markdown for every nickname in order to prevent the underlines in different nicknames from being rendered as italics or bold for matching markdown syntax.
 		pushMessage({ nick: '*', text: i18ntranslate("Users online: ", 'system') + nicksHTML.join(", ") }, { i18n: false, isHtml: true, raw })
 
-		pushMessage({ nick: '*', text: "Thanks for using hackchat++ client! Source code at: https://github.com/Hiyoteam/hackchat-client-plus" }, { i18n: true })
+		pushMessage({ nick: '*', text: "Thanks for using crosstchat++ client! It's in beta, so bugs are possible, report to 0x24a!" }, { i18n: true })
 
 		if (myColor) {
 			if (myColor == 'random') {
@@ -622,7 +622,7 @@ function pushMessage(args, options = {}) {
 
 	// Scroll to bottom
 	var atBottom = isAtBottom();
-	if (!(args.text && /咱是中国人，可要说中文啊/.test(args.text))) {
+	if (!(args.text && /点击跳转\/十字街-上手指南\/持续更新/.test(args.text))) {
 		$id('messages').appendChild(messageEl);
 	}
 	if (atBottom && myChannel != ''/*Frontpage should not be scrooled*/) {
@@ -670,16 +670,11 @@ if (myChannel == '') {
 	$id('export-json').classList.add('hidden');
 	$id('export-readable').classList.add('hidden');
 	$id('users-div').classList.add('hidden');
-	pushFrontPage()
-	if (should_get_info) {
-		getInfo().then(function () {
-			$id('messages').innerHTML = '';
-			pushFrontPage()
-		})
-	}
+	getHomepage();
 } else {
 	join(myChannel);
 }
 
-const HCER_INFO = 'HC++ Made by 4n0n4me & other HiyoTeam members at hcer.netlify.app (or hc.thz.cool for cloudflare proxied), source at: https://github.com/Hiyoteam/hackchat-client-plus'
+const HCER_INFO = 'CSC++ Made by 0x24a, Based on HC++ by 4n0n4me & other HiyoTeam members'
+const CSCPP_VER = 'v1.0.0'
 console.log(HCER_INFO)

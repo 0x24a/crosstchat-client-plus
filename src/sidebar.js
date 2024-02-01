@@ -294,12 +294,6 @@ var ignoredHashs = []
 var usersInfo = {};
 
 function userAdd(nick, user_info) {
-	let trip = user_info.trip
-
-	if (nick.length >= 25) {
-		pushMessage({ nick: '!', text: "A USER WHOSE NICKNAME HAS MORE THAN 24 CHARACTERS HAS JOINED. THIS INFINITE LOOP SCRIPT WHICH MAY CRASH YOUR BROWSER WOULD BE RUN IN OFFICIAL CLIENT:\n ```Javascript\nfor (var i = 5; i > 3; i = i + 1) { console.log(i); }\n```" })
-		pushMessage({ nick: '!', text: "This is probably caused by a moderator using the `overflow` command on you. Maybe that command is one supposed to crash the browser of the target user..." })
-	}
 
 	var user = document.createElement('a');
 	user.textContent = nick;
@@ -318,12 +312,12 @@ function userAdd(nick, user_info) {
 			pushMessage({ nick: '*', text: `Ignored nick ${nick}.` })
 		}
 	}
-
+	if(user_info){
 	user.onmouseenter = function (e) {
 		user.classList.add('nick')
 		addClassToMessage(user.parentElement, user_info)
 		addClassToNick(user, user_info)
-	}
+	}}
 
 	user.onmouseleave = function (e) {
 		user.style.removeProperty('color')
@@ -332,24 +326,29 @@ function userAdd(nick, user_info) {
 
 	var userLi = document.createElement('li');
 	userLi.appendChild(user);
-
-	if (user_info.hash) {
-		userLi.title = user_info.hash
+	if (user_info){
+		if (user_info.hash) {
+			userLi.title = user_info.hash
+		}
 	}
 
 	userLi.id = `user-li-${nick}`
-
-	if (trip) {
-		let tripEl = document.createElement('span')
-		tripEl.textContent = ' ' + trip
-		tripEl.classList.add('trip')
-		userLi.appendChild(tripEl)
+	if (user_info){
+		if (user_info.trip) {
+			let tripEl = document.createElement('span')
+			tripEl.textContent = ' ' + trip
+			tripEl.classList.add('trip')
+			userLi.appendChild(tripEl)
+		}
 	}
 
 	$id('users').appendChild(userLi);
 	onlineUsers.push(nick);
-
-	usersInfo[nick] = user_info
+	if(user_info){
+		usersInfo[nick] = user_info
+	}else{
+		usersInfo[nick] = {'nick':nick}
+	}
 }
 
 function userRemove(nick, user_info) {
@@ -426,6 +425,7 @@ function hashDeignore(hash) {
 /* color scheme switcher */
 
 var schemes = [
+	'黑色系 - 寒夜',
 	'android',
 	'android-white',
 	'atelier-dune',
@@ -489,8 +489,8 @@ var languages = [
 	['简体中文', 'zh-CN']
 ]
 
-var currentScheme = 'atelier-dune';
-var currentHighlight = 'darcula';
+var currentScheme = '黑色系 - 寒夜';
+var currentHighlight = 'rainbow';
 
 function setScheme(scheme) {
 	currentScheme = scheme;

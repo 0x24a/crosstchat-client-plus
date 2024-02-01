@@ -9,7 +9,7 @@ function RequestNotifyPermission() {
 		var notifyPromise = Notification.requestPermission();
 		if (notifyPromise) {
 			notifyPromise.then(function (result) {
-				console.log("Hack.Chat notification permission: " + result);
+				console.log("Crosst.Chat notification permission: " + result);
 				if (result === "granted") {
 					if (notifyPermissionExplained === 0) {
 						pushMessage({

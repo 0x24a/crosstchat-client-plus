@@ -9,49 +9,33 @@ document.addEventListener("keydown", e => {
 
 //make frontpage have a getter
 //https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/get#%E4%BD%BF%E7%94%A8defineproperty%E5%9C%A8%E7%8E%B0%E6%9C%89%E5%AF%B9%E8%B1%A1%E4%B8%8A%E5%AE%9A%E4%B9%89_getter
-function frontpage() {
-	return i18ntranslate([
-		"<pre><code><div style=\"margin: auto; width: fit-content;\">" +
-		" _           _         _       _   ",
-		"| |_ ___ ___| |_   ___| |_ ___| |_ ",
-		"|   |_ ||  _| '_| |  _|   |_ ||  _|",
-		"|_|_|__/|___|_,_|.|___|_|_|__/|_|  ",
-		"</div></code></pre>",
-		md.render([
-			"---",
-			"Welcome to hack.chat, a minimal, distraction-free chat application.",
-			"You are now experiencing hack.chat with a tweaked client: hackchat\\+\\+. Official hack.chat client is at: https://hack.chat.",
-			"Channels are created, joined and shared with the url, create your own channel by changing the text after the question mark. Example: " + (location.host != '' ? ('https://' + location.host + '/') : window.location.href) + "?your-channel",
-			"There are no channel lists *for normal users*, so a secret channel name can be used for private discussions.",
-			"---",
-			"Here are some pre-made channels you can join: " + (should_get_info ? (info.public ? ("(" + info.users + " users online, " + info.chans + " channels existing when you enter this page)") : "(Getting online counts...)") : "(Online counts disabled)"),
-		].join('\n')),
-		md.render(channels.map(line => line.join(' ')).join('\n')),
-		md.render([
-			"And here's a random one generated just for you: " + ((!should_get_info) || info.public ? ("?" + Math.random().toString(36).substr(2, 8)) : ""),
-			"",
-			"---",
-			"Formatting:",
-			"Notice: Dont send raw source code without using a code block!",
-			"Surround LaTeX with a dollar sign for inline style $\\zeta(2) = \\pi^2/6$, and two dollars for display. ",
-			"For syntax highlight, wrap the code like: \\`\\`\\`<language> <the code>\\`\\`\\` where <language> is any known programming language.",
-			"---",
-			"Current Github: https://github.com/hack-chat",
-			"Legacy GitHub: https://github.com/AndrewBelt/hack.chat",
-			"---",
-			"Bots, Android clients, desktop clients, browser extensions, docker images, programming libraries, server modules and more:",
-			"https://github.com/hack-chat/3rd-party-software-list",
-			"---",
-			"Server and web client released under the WTFPL and MIT open source license.",
-			"No message history is retained on the hack.chat server, but in certain channels there may be bots made by users which record messages.",
-			"---",
-			"Github of hackchat++ (aka hackchat-client-plus): https://github.com/Hiyoteam/hackchat-client-plus",
-			"Hosted at https://hcer.netlify.app/ and https://hc.thz.cool/ and https://hach.chat/ and https://hcer.fourohfour.link/ (thanks to 0x24a for domains).",
-			"Links: [Hack.Chat](https://hack.chat) | ==[Hack.Chat wiki written in Chinese/中文hack.chat帮助文档](https://hcwiki.github.io)== | [History in chatrooms written in Chinese/聊天室历史书](https://hcwiki.gitbook.io/history) | [Crosst.Chat](https://crosst.chat) (Thanks for providing replying script!)",
-			"其它HC客户端: [awa客户端 by DPG](https://hc.doppelganger.eu.org/) | [whitechat客户端 by 黑茶](https://whitechat.darknights.repl.co/) | [pipechat客户端 by 黑茶](https://pipechat.darknights.repl.co/)"
-		].join('\n')),
-	].join("\n"), 'home')
-}
+function getHomepage() {
+  
+	ws = new WebSocket( ws_url );
+  
+	ws.onerror = function () {
+	  pushMessage({ text: "# dx_xb\n连接聊天室服务器失败，请稍候重试。\n**如果这个问题持续出现，请立刻联系 mail@henrize.kim 感谢您的理解和支持**", nick: '!'});
+	}
+  
+	var reqSent = false;
+  
+	ws.onopen = function () {
+	  if (!reqSent) {
+		send({ cmd: 'getinfo' });
+		reqSent = true;
+	  }
+	  return;
+	}
+  
+	ws.onmessage = function (message) {
+	  var args = JSON.parse(message.data);
+	  if (args.ver == undefined) {
+		args.ver = "获取失败";
+		args.online = "获取失败";
+	  }
+	  var homeText = "# 十字街\n##### " + args.ver + " 在线人数：" + args.online + " 客户端：CrosSt++ " + CSCPP_VER + "\n-----\n欢迎来到十字街，这是一个简洁轻小的聊天室网站。\n第一次来十字街？来 **[公共聊天室](?公共聊天室)** 看看吧！\n你也可以创建自己的聊天室。\n站长邮箱：mail@henrize.kim（维护中，无法发信）\n十字街源码：[github.com/CrosSt-Chat/CSC-main](https://github.com/CrosSt-Chat/CSC-main/)\n-----\n在使用本网站时，您应当遵守中华人民共和国的有关规定。\n如果您不在中国大陆范围内居住，您还应当同时遵守当地的法律规定。\nCrosSt.Chat Dev Team - 2020/02/29\nHave a nice chat!";    pushMessage({ text: homeText });
+	}
+  }
 
 
 var info = {}
@@ -235,9 +219,9 @@ function updateTitle() {
 
 	var title;
 	if (myChannel) {
-		title = myChannel + " - hack.chat++";
+		title = myChannel + " - crosst.chat++";
 	} else {
-		title = "hack.chat++";
+		title = "crosst.chat++";
 	}
 
 	if (unread > 0) {

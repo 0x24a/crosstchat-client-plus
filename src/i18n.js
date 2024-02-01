@@ -180,9 +180,9 @@ function i18ntranslate(text, rules = ['all']) {
     return text
 }
 
-let lang = 'en-US'
+let lang = 'zh-CN'
 
-if (localStorageGet('i18n') && localStorageGet('i18n') != 'en-US') {
+if (localStorageGet('i18n') && localStorageGet('i18n') != 'zh-CN') {
     if (i18n.has(localStorageGet('i18n'))) {
         lang = localStorageGet('i18n')
         document.querySelector('html').lang = lang
@@ -191,6 +191,6 @@ if (localStorageGet('i18n') && localStorageGet('i18n') != 'en-US') {
             el.innerHTML = i18ntranslate(el.innerHTML, 'ui')
         })
     } else {
-        alert(`Sorry, we have not made language ${localStorageGet('i18n')}. You can try: zh-CN.`)
+        alert(`Sorry, we have not made language ${localStorageGet('i18n')}. You can try: en-US.`)
     }
 }
